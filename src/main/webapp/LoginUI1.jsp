@@ -43,9 +43,6 @@
                         </button>
                     </div>
                 </form>
-
-                <hr class="divider">
-                
             </div>
         </div>
     </div>

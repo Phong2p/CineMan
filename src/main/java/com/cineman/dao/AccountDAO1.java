@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 /**
  * Lớp AccountDAO1 - Xử lý truy vấn dữ liệu tài khoản người dùng
@@ -50,56 +49,4 @@ public class AccountDAO1 extends DAO1 {
         }
         return null;
     }
-
-    /**
-     * Kiểm tra username đã tồn tại chưa
-     * @param username Tên đăng nhập cần kiểm tra
-     * @return true nếu đã tồn tại
-     */
-    public boolean isUsernameExist(String username) {
-        String sql = "SELECT COUNT(*) FROM tblAccount WHERE username = ?";
-        Connection connection = getConnection();
-        try (PreparedStatement ps = connection.prepareStatement(sql)) {
-            ps.setString(1, username != null ? username.trim() : "");
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return rs.getInt(1) > 0;
-                }
-            }
-        } catch (SQLException e) {
-            System.err.println("[AccountDAO1] Lỗi khi kiểm tra username: " + e.getMessage());
-        }
-        return false;
-    }
-
-    /**
-     * Đăng ký tài khoản mới
-     * @param account Đối tượng Account1 cần đăng ký
-     * @return true nếu đăng ký thành công
-     */
-    public boolean register(Account1 account) {
-        if (account == null || account.getUsername() == null || account.getPassword() == null) {
-            return false;
-        }
-        String sql = "INSERT INTO tblAccount (username, password, fullName, role) VALUES (?, ?, ?, ?)";
-        Connection connection = getConnection();
-        try (PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, account.getUsername().trim());
-            ps.setString(2, account.getPassword());
-            ps.setString(3, account.getFullName() != null ? account.getFullName().trim() : "");
-            ps.setString(4, account.getRole() != null ? account.getRole() : Account1.ROLE_CUSTOMER);
-            int rows = ps.executeUpdate();
-            if (rows > 0) {
-                try (ResultSet keys = ps.getGeneratedKeys()) {
-                    if (keys.next()) account.setId(keys.getInt(1));
-                }
-                return true;
-            }
-        } catch (SQLException e) {
-            System.err.println("[AccountDAO1] Lỗi khi đăng ký tài khoản: " + e.getMessage());
-            e.printStackTrace();
-        }
-        return false;
-    }
 }
-
