@@ -30,7 +30,7 @@
         <h2>Trang Chủ</h2>
         <div class="cm-spacer"></div>
         <span class="cm-user-name"><%= displayName %></span>
-        <a class="btn cm-logout-button"
+        <a id="btnLogout" name="btnLogout" class="btn cm-logout-button"
            href="${pageContext.request.contextPath}/account?action=logout">Đăng xuất</a>
     </div>
 
