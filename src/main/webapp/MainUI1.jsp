@@ -6,7 +6,6 @@
         response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp");
         return;
     }
-    String hiddenRole = currentAccount.getRole();
     String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
                           ? currentAccount.getFullName() : currentAccount.getUsername();
 %>
@@ -19,8 +18,6 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/style.css">
 </head>
 <body>
-<!-- hidden role attribute theo thiết kế -->
-<input type="hidden" id="hiddenRole" name="hiddenRole" value="<%= hiddenRole %>">
 
 <div class="cm-card">
     <!-- App Bar -->
@@ -46,7 +43,6 @@
                     <a href="${pageContext.request.contextPath}/screening?action=listScreenings"
                        id="linkManageScreening" name="linkManageScreening" class="cm-role-card">
                         <span class="title">Quản lý lịch chiếu</span>
-                       
                     </a>
                 <% } %>
             </div>

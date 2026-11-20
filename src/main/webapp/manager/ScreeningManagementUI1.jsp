@@ -5,19 +5,23 @@
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
     if (!currentAccount.isManager()) { response.sendRedirect(request.getContextPath() + "/MainUI1.jsp"); return; }
-    String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
-                          ? currentAccount.getFullName() : currentAccount.getUsername();
+
+    // Thuộc tính của lớp ScreeningManagementUI1 theo biểu đồ thiết kế
+    String outCurrentWeek = (String) request.getAttribute("outCurrentWeek");
+    @SuppressWarnings("unchecked")
+    List<Screening1> listScreenings = (List<Screening1>) request.getAttribute("listScreenings");
+    String outMessage = (String) request.getAttribute("outMessage");
 
     int weekOffset = 0;
     if (request.getAttribute("weekOffset") != null) weekOffset = (Integer) request.getAttribute("weekOffset");
-    String outCurrentWeek = (String) request.getAttribute("outCurrentWeek");
     if (outCurrentWeek == null) {
         LocalDate monday = LocalDate.now().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
         DateTimeFormatter weekFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         outCurrentWeek = monday.format(weekFormat) + " - " + monday.plusDays(6).format(weekFormat);
     }
-    List<Screening1> screenings = (List<Screening1>) request.getAttribute("listScreenings");
     SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+    String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
+                          ? currentAccount.getFullName() : currentAccount.getUsername();
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -37,68 +41,67 @@
         <span class="cm-user-name"><%= displayName %></span>
     </div>
 
-    <div class="cm-body">
-        <%-- Flash message thành công sau khi lưu lịch chiếu --%>
-        <%
-            String flashMsg = (String) request.getAttribute("outMessage");
-            if (flashMsg != null && !flashMsg.isEmpty()) {
-        %>
-        <div class="alert alert-success" id="outMessage" style="margin-bottom:16px;">
-            <%= flashMsg %>
-        </div>
-        <% } %>
-
-        <!-- Thanh điều hướng tuần -->
+    <!-- Toolbar: Điều hướng tuần + Nút thêm suất chiếu -->
+    <div class="cm-toolbar">
         <div class="week-nav">
             <a href="${pageContext.request.contextPath}/screening?action=listScreenings&weekOffset=<%= weekOffset - 1 %>"
-               id="btnPreviousWeek" name="subPreviousWeek" class="btn btn-outline btn-sm">Tuần trước</a>
-            <span class="week-badge" id="outCurrentWeek"><%= outCurrentWeek %></span>
+               id="btnPreviousWeek" name="btnPreviousWeek" class="btn btn-secondary btn-sm">&larr; Tuần trước</a>
+            <span class="week-display">Tuần: <strong id="outCurrentWeek"><%= outCurrentWeek %></strong></span>
             <a href="${pageContext.request.contextPath}/screening?action=listScreenings&weekOffset=<%= weekOffset + 1 %>"
-               id="btnNextWeek" name="subNextWeek" class="btn btn-outline btn-sm">Tuần sau</a>
-            <a href="${pageContext.request.contextPath}/screening?action=showAddScreeningForm"
-               id="btnAddScreening" name="subAddScreening" class="btn btn-primary btn-sm">Thêm lịch chiếu</a>
+               id="btnNextWeek" name="btnNextWeek" class="btn btn-secondary btn-sm">Tuần sau &rarr;</a>
         </div>
+        <a href="${pageContext.request.contextPath}/screening?action=showAddScreeningForm"
+           id="btnAddScreening" name="btnAddScreening" class="btn btn-primary">+ Thêm lịch chiếu</a>
+    </div>
 
-        <!-- Bảng danh sách suất chiếu -->
+    <div class="cm-body">
+        <% if (outMessage != null && !outMessage.isEmpty()) { 
+            boolean isSuccess = outMessage.toLowerCase().contains("thành công");
+        %>
+            <div class="alert <%= isSuccess ? "alert-success" : "alert-warning" %>" id="outMessage"><%= outMessage %></div>
+        <% } %>
+
+        <% if (listScreenings != null && !listScreenings.isEmpty()) { %>
         <div class="cm-table-wrap">
             <table class="cm-table" id="tblScreeningList">
                 <thead>
                     <tr>
-                        <th style="width:35%">Tên phim</th>
-                        <th style="width:20%" class="td-center">Ngày chiếu</th>
-                        <th style="width:25%" class="td-center">Giờ chiếu</th>
-                        <th style="width:20%" class="td-center">Phòng</th>
+                        <th style="width:6%">STT</th>
+                        <th style="width:30%">Tên phim</th>
+                        <th style="width:16%">Ngày chiếu</th>
+                        <th style="width:20%">Khung giờ</th>
+                        <th style="width:18%">Phòng chiếu</th>
+                        <th style="width:10%" class="td-center">Sức chứa</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <% if (screenings != null && !screenings.isEmpty()) {
-                           for (Screening1 s : screenings) {
-                               String mName = s.getMovie() != null ? s.getMovie().getMovieName() : "Không rõ";
-                               String sDate = s.getScreeningDate() != null ? sdf.format(s.getScreeningDate()) : "Không rõ";
-                               String sTime = s.getTimeSlot();
-                               String rName = s.getScreeningRoom() != null ? s.getScreeningRoom().getRoomName() : "Không rõ";
-                    %>
+                    <% int i = 1;
+                       for (Screening1 sc : listScreenings) { %>
                     <tr>
-                        <td><strong><%= mName %></strong></td>
-                        <td class="td-center"><%= sDate %></td>
-                        <td class="td-center"><%= sTime %></td>
-                        <td class="td-center"><span class="badge badge-blue"><%= rName %></span></td>
-                    </tr>
-                    <%     }
-                       } else { %>
-                    <tr>
-                        <td colspan="4" class="td-center" style="padding:30px;color:var(--text-muted);">
-                            Không có suất chiếu nào trong tuần này. Nhấn <strong>Thêm lịch chiếu</strong> để tạo mới.
+                        <td class="td-center"><%= i++ %></td>
+                        <td><strong><%= sc.getMovie() != null ? sc.getMovie().getMovieName() : "N/A" %></strong></td>
+                        <td><%= sc.getScreeningDate() != null ? sdf.format(sc.getScreeningDate()) : "" %></td>
+                        <td>
+                            <%= (sc.getStartTime() != null ? sc.getStartTime().toString().substring(0, 5) : "") %>
+                            &nbsp;-&nbsp;
+                            <%= (sc.getEndTime() != null ? sc.getEndTime().toString().substring(0, 5) : "") %>
                         </td>
+                        <td><%= sc.getScreeningRoom() != null ? sc.getScreeningRoom().getRoomName() : "N/A" %></td>
+                        <td class="td-center"><%= sc.getScreeningRoom() != null ? sc.getScreeningRoom().getCapacity() : "" %></td>
                     </tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
+        <% } else { %>
+            <div class="empty-state">
+                <p>Không có lịch chiếu nào trong tuần này.</p>
+            </div>
+        <% } %>
     </div>
 
     <div class="cm-footer-bar">
-        <a href="${pageContext.request.contextPath}/MainUI1.jsp" id="linkBack" class="link-back">Trang chủ</a>
+        <a href="${pageContext.request.contextPath}/MainUI1.jsp" id="linkBack" class="link-back">Quay lại</a>
     </div>
 </div>
 </body>

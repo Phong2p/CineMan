@@ -3,9 +3,13 @@
 <%
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
+
+    // Thuộc tính của lớp MovieDetailUI1 theo biểu đồ thiết kế
+    Movie1 movie = (Movie1) request.getAttribute("movie");
+    String outMessage = (String) request.getAttribute("outMessage");
+
     String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
                           ? currentAccount.getFullName() : currentAccount.getUsername();
-    Movie1 movie = (Movie1) request.getAttribute("movie");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -26,6 +30,10 @@
     </div>
 
     <div class="cm-body">
+        <% if (outMessage != null && !outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage"><%= outMessage %></div>
+        <% } %>
+
         <% if (movie != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
             NumberFormat nf = NumberFormat.getNumberInstance(new Locale("vi", "VN"));
@@ -58,15 +66,15 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Thể loại:</span>
-                    <span class="info-value" id="outGenre"><%= movie.getGenre() %></span>
+                    <span class="info-value" id="outGenre"><%= movie.getGenre() != null ? movie.getGenre() : "" %></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Đạo diễn:</span>
-                    <span class="info-value" id="outDirector"><%= movie.getDirector() %></span>
+                    <span class="info-value" id="outDirector"><%= movie.getDirector() != null ? movie.getDirector() : "" %></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Diễn viên:</span>
-                    <span class="info-value" id="outActors"><%= movie.getActors() %></span>
+                    <span class="info-value" id="outActors"><%= movie.getActors() != null ? movie.getActors() : "" %></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Thời lượng:</span>
@@ -74,7 +82,7 @@
                 </div>
                 <div class="info-row">
                     <span class="info-label">Nội dung:</span>
-                    <span class="info-value" id="outDescription"><%= movie.getDescription() %></span>
+                    <span class="info-value" id="outDescription"><%= movie.getDescription() != null ? movie.getDescription() : "" %></span>
                 </div>
                 <div class="info-row">
                     <span class="info-label">Khởi chiếu:</span>
@@ -90,8 +98,8 @@
                 </div>
             </div>
         </div>
-        <% } else { %>
-            <div class="alert alert-warning">Không tìm thấy thông tin chi tiết phim!</div>
+        <% } else if (outMessage == null || outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage">Không tìm thấy thông tin chi tiết phim!</div>
         <% } %>
     </div>
 

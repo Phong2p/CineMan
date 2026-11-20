@@ -3,6 +3,12 @@
 <%
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
+
+    // Thuộc tính của lớp MovieSearchUI1 theo biểu đồ thiết kế
+    String inMovieName = request.getParameter("inMovieName");
+    if (inMovieName == null) inMovieName = "";
+    String outMessage = (String) request.getAttribute("outMessage");
+
     String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
                           ? currentAccount.getFullName() : currentAccount.getUsername();
 %>
@@ -25,24 +31,22 @@
     </div>
 
     <div class="cm-body">
-        <% String msg = (String) request.getAttribute("outMessage");
-           if (msg != null && !msg.isEmpty()) { %>
-            <div class="alert alert-warning"><%= msg %></div>
+        <% if (outMessage != null && !outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage"><%= outMessage %></div>
         <% } %>
 
         <form action="${pageContext.request.contextPath}/movie" method="GET" class="search-bar">
             <input type="hidden" name="action" value="searchMovie">
             <label for="inMovieName">Tên phim:</label>
             <input type="text" id="inMovieName" name="inMovieName"
-                   placeholder="Nhập tên phim..."
-                   value="<%= request.getAttribute("inMovieName") != null ? request.getAttribute("inMovieName") : "" %>"
-                   autofocus required>
-            <button type="submit" id="btnSearch" name="subSearch" class="btn btn-primary">Tìm kiếm</button>
+                   value="<%= inMovieName %>"
+                   placeholder="Nhập tên phim cần tìm..." required>
+            <button type="submit" id="btnSearch" name="btnSearch" class="btn btn-primary">Tìm kiếm</button>
         </form>
     </div>
 
     <div class="cm-footer-bar">
-        <a href="${pageContext.request.contextPath}/MainUI1.jsp" id="linkBack" class="link-back">Trang chủ</a>
+        <a href="${pageContext.request.contextPath}/MainUI1.jsp" id="linkBack" class="link-back">Quay lại</a>
     </div>
 </div>
 </body>

@@ -1,14 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.List,com.cineman.model.ScreeningRoom1,com.cineman.model.Account1" %>
+<%@ page import="java.util.List,com.cineman.model.Screening1,com.cineman.model.ScreeningRoom1,com.cineman.model.Account1" %>
 <%
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
     if (!currentAccount.isManager()) { response.sendRedirect(request.getContextPath() + "/MainUI1.jsp"); return; }
+
+    // Thuộc tính của lớp ScreeningRoomSelectionUI1 theo biểu đồ thiết kế
+    Screening1 screening = (Screening1) session.getAttribute("pendingScreening");
+    String outScreeningDate = (String) request.getAttribute("outScreeningDate");
+    String outTimeSlot = (String) request.getAttribute("outTimeSlot");
+    @SuppressWarnings("unchecked")
+    List<ScreeningRoom1> listAvailableRooms = (List<ScreeningRoom1>) request.getAttribute("listAvailableRooms");
+    String outMessage = (String) request.getAttribute("outMessage");
+
     String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
                           ? currentAccount.getFullName() : currentAccount.getUsername();
-    List<ScreeningRoom1> listRooms = (List<ScreeningRoom1>) request.getAttribute("listAvailableRooms");
-    String outDate = (String) request.getAttribute("outScreeningDate");
-    String outSlot = (String) request.getAttribute("outTimeSlot");
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -30,18 +36,17 @@
 
     <!-- Thông tin ngày/giờ đã chọn -->
     <div class="cm-subbar">
-        <span>Ngày chiếu: <strong id="outScreeningDate"><%= outDate %></strong></span>
+        <span>Ngày chiếu: <strong id="outScreeningDate"><%= outScreeningDate %></strong></span>
         &nbsp;|&nbsp;
-        <span>Khung giờ: <strong id="outTimeSlot"><%= outSlot %></strong></span>
+        <span>Khung giờ: <strong id="outTimeSlot"><%= outTimeSlot %></strong></span>
     </div>
 
     <div class="cm-body">
-        <% String msg = (String) request.getAttribute("outMessage");
-           if (msg != null && !msg.isEmpty()) { %>
-            <div class="alert alert-warning" id="outMessage"><%= msg %></div>
+        <% if (outMessage != null && !outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage"><%= outMessage %></div>
         <% } %>
 
-        <% if (listRooms != null && !listRooms.isEmpty()) { %>
+        <% if (listAvailableRooms != null && !listAvailableRooms.isEmpty()) { %>
         <div class="cm-table-wrap">
             <table class="cm-table" id="tblAvailableRoomList">
                 <thead>
@@ -53,17 +58,17 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <% for (ScreeningRoom1 room : listRooms) { %>
+                    <% for (ScreeningRoom1 room : listAvailableRooms) { %>
                     <tr>
                         <td><strong><%= room.getRoomName() %></strong></td>
-                        <td class="td-center"><span class="badge badge-blue"><%= room.getCapacity() %> chỗ</span></td>
-                        <td style="font-size:13px;color:var(--text-muted);"><%= room.getDescription() != null ? room.getDescription() : "" %></td>
+                        <td class="td-center"><%= room.getCapacity() %> chỗ</td>
+                        <td><%= room.getDescription() != null ? room.getDescription() : "" %></td>
                         <td class="td-center">
                             <form action="${pageContext.request.contextPath}/screening" method="POST" style="margin:0;">
                                 <input type="hidden" name="action" value="selectRoom">
                                 <input type="hidden" name="roomId" value="<%= room.getId() %>">
-                                <button type="submit" id="btnSelectRoom_<%= room.getId() %>" name="subSelectRoom"
-                                        class="btn btn-primary btn-sm">Chọn</button>
+                                <button type="submit" id="btnSelectRoom_<%= room.getId() %>" name="btnSelectRoom"
+                                        class="btn btn-primary btn-sm">Chọn phòng</button>
                             </form>
                         </td>
                     </tr>
@@ -71,8 +76,8 @@
                 </tbody>
             </table>
         </div>
-        <% } else if (msg == null) { %>
-            <div class="alert alert-warning">Không có phòng trống trong khung giờ này!</div>
+        <% } else if (outMessage == null || outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage">Không có phòng chiếu nào còn trống trong khung giờ này!</div>
         <% } %>
     </div>
 

@@ -3,11 +3,16 @@
 <%
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
-    String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
-                          ? currentAccount.getFullName() : currentAccount.getUsername();
+
+    // Thuộc tính của lớp MovieSearchResultUI1 theo biểu đồ thiết kế
+    @SuppressWarnings("unchecked")
     List<Movie1> listMovie = (List<Movie1>) request.getAttribute("listMovie");
+    String outMessage = (String) request.getAttribute("outMessage");
     String keyword = (String) request.getAttribute("searchKeyword");
     if (keyword == null) keyword = "";
+
+    String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
+                          ? currentAccount.getFullName() : currentAccount.getUsername();
 %>
 <!DOCTYPE html>
 <html lang="vi">
@@ -35,9 +40,8 @@
     </div>
 
     <div class="cm-body">
-        <% String msg = (String) request.getAttribute("outMessage");
-           if (msg != null && !msg.isEmpty()) { %>
-            <div class="alert alert-warning" id="outMessage"><%= msg %></div>
+        <% if (outMessage != null && !outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage"><%= outMessage %></div>
         <% } %>
 
         <% if (listMovie != null && !listMovie.isEmpty()) { %>
@@ -59,21 +63,22 @@
                         <td><strong><%= m.getMovieName() %></strong></td>
                         <td><%= m.getGenre() != null ? m.getGenre() : "" %></td>
                         <td class="td-center">
-                            <a href="${pageContext.request.contextPath}/movie?action=showMovieDetail&movieId=<%= m.getId() %>"
-                               id="linkSelectMovie_<%= m.getId() %>"
-                               name="linkSelectMovie"
-                               class="btn btn-outline btn-sm">Xem chi tiết</a>
+                            <a href="${pageContext.request.contextPath}/movie?action=showMovieDetail&id=<%= m.getId() %>"
+                               id="linkSelectMovie_<%= m.getId() %>" name="linkSelectMovie"
+                               class="btn btn-primary btn-sm">Xem chi tiết</a>
                         </td>
                     </tr>
                     <% } %>
                 </tbody>
             </table>
         </div>
+        <% } else if (outMessage == null || outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage">Không tìm thấy phim phù hợp với từ khóa!</div>
         <% } %>
     </div>
 
     <div class="cm-footer-bar">
-        <a href="${pageContext.request.contextPath}/movie?action=showSearchForm" id="linkBack" class="link-back">Tìm lại</a>
+        <a href="${pageContext.request.contextPath}/movie?action=showSearchForm" id="linkBack" class="link-back">Quay lại tìm kiếm</a>
     </div>
 </div>
 </body>

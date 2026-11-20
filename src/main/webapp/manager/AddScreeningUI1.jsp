@@ -4,6 +4,13 @@
     Account1 currentAccount = (Account1) session.getAttribute("currentAccount");
     if (currentAccount == null) { response.sendRedirect(request.getContextPath() + "/LoginUI1.jsp"); return; }
     if (!currentAccount.isManager()) { response.sendRedirect(request.getContextPath() + "/MainUI1.jsp"); return; }
+
+    // Thuộc tính của lớp AddScreeningUI1 theo biểu đồ thiết kế
+    String inScreeningDate = (String) request.getAttribute("inScreeningDate");
+    String inStartTime = (String) request.getAttribute("inStartTime");
+    String inEndTime = (String) request.getAttribute("inEndTime");
+    String outMessage = (String) request.getAttribute("outMessage");
+
     String displayName = (currentAccount.getFullName() != null && !currentAccount.getFullName().trim().isEmpty())
                           ? currentAccount.getFullName() : currentAccount.getUsername();
 %>
@@ -26,9 +33,8 @@
     </div>
 
     <div class="cm-body">
-        <% String msg = (String) request.getAttribute("outMessage");
-           if (msg != null && !msg.isEmpty()) { %>
-            <div class="alert alert-warning" id="outMessage"><%= msg %></div>
+        <% if (outMessage != null && !outMessage.isEmpty()) { %>
+            <div class="alert alert-warning" id="outMessage"><%= outMessage %></div>
         <% } %>
 
         <form action="${pageContext.request.contextPath}/screening" method="POST">
@@ -37,22 +43,24 @@
                 <div class="form-group">
                     <label for="inScreeningDate">Ngày chiếu</label>
                     <input type="date" id="inScreeningDate" name="inScreeningDate"
+                           value="<%= inScreeningDate != null ? inScreeningDate : "" %>"
                            required>
                 </div>
                 <div class="form-group">
                     <label for="inStartTime">Giờ bắt đầu (HH:mm)</label>
                     <input type="text" id="inStartTime" name="inStartTime"
+                           value="<%= inStartTime != null ? inStartTime : "" %>"
                            placeholder="09:00" required>
                 </div>
                 <div class="form-group">
                     <label for="inEndTime">Giờ kết thúc (HH:mm)</label>
                     <input type="text" id="inEndTime" name="inEndTime"
+                           value="<%= inEndTime != null ? inEndTime : "" %>"
                            placeholder="11:00" required>
                 </div>
-                <div class="form-actions">
-                    <button type="submit" id="btnFindRoom" name="subFindRoom"
-                            class="btn btn-primary" style="padding:10px 32px;">
-                        Tìm phòng trống
+                <div class="form-group" style="align-self: flex-end;">
+                    <button type="submit" id="btnFindRoom" name="btnFindRoom" class="btn btn-primary" style="width:100%;">
+                        Tìm phòng chiếu
                     </button>
                 </div>
             </div>
